@@ -18,11 +18,38 @@
             background: #ffcc00; color: #000;
             padding: 10px 40px; font-weight: bold; border-radius: 5px;
             box-shadow: 0 0 20px rgba(255, 204, 0, 0.4);
-            margin-bottom: 50px;
+            margin-bottom: 30px;
+        }
+
+        /* Музыкант и поиск сыра */
+        .platform {
+            position: relative; width: 100%; max-width: 500px; height: 100px;
+            border-bottom: 10px solid #333; margin-bottom: 20px;
+        }
+
+        #musician {
+            position: absolute; bottom: 0; left: 20px;
+            font-size: 50px; cursor: pointer; transition: 0.3s;
+        }
+
+        #hidden-cheese {
+            position: absolute; font-size: 20px; cursor: pointer;
+            display: block; z-index: 10;
+        }
+
+        .music-notes {
+            position: absolute; top: -40px; left: 30px;
+            font-size: 20px; display: none; color: #ffcc00;
+            white-space: nowrap; animation: float 2s infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-30px); opacity: 0; }
         }
 
         .tunnel {
-            width: 300px; height: 150px;
+            width: 300px; height: 120px;
             border-top: 5px solid #444; border-bottom: 5px solid #444;
             display: flex; justify-content: space-around; align-items: center;
             position: relative; background: linear-gradient(90deg, #111, #222, #111);
@@ -32,16 +59,12 @@
         .train.arrived { left: 110px; }
         .train.departed { left: 400px; }
 
-        .map {
-            display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 50px;
-        }
-
+        .map { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 30px; }
         .station-btn {
             background: #333; color: #ffcc00; border: 1px solid #ffcc00;
-            padding: 15px 30px; border-radius: 50px; cursor: pointer;
-            text-decoration: none; text-align: center; transition: 0.3s;
+            padding: 12px 25px; border-radius: 50px; cursor: pointer;
+            text-decoration: none; text-align: center; transition: 0.3s; font-size: 0.9rem;
         }
-
         .station-btn:hover { background: #ffcc00; color: #000; }
         
         #overlay {
@@ -52,42 +75,69 @@
 </head>
 <body>
 
-    <div class="station-sign">МЕТРОПОЛИТЕН</div>
+    <div class="station-sign">СТАНЦИЯ "ПОДЗЕМНАЯ"</div>
+
+    <div class="platform">
+        <div id="musician" onclick="talkToMusician()">🎸🐀
+            <div id="notes" class="music-notes">🎶 Ля-ля, сыр-сыр... 🎶</div>
+        </div>
+        <div id="hidden-cheese" onclick="collectCheese()">🧀</div>
+    </div>
 
     <div class="tunnel">
         <div class="train" id="train">🚃🐁</div>
     </div>
 
     <div class="map">
-        <button class="station-btn" onclick="travel('https://de6ulu3m-code.github.io/ratpage/')">🌿 Станция "Зелёный Луг" (Дворик)</button>
-        <button class="station-btn" onclick="travel('https://de6ulu3m-code.github.io/krisinaya_nora/')">🕳️ Станция "Уютный Тупик" (Нора)</button>
-        <button class="station-btn" onclick="travel('https://de6ulu3m-code.github.io/rattown/')">🏙️ Станция "Центр Грызунов" (Город)</button>
+        <button class="station-btn" onclick="travel('https://de6ulu3m-code.github.io/ratpage/')">🌿 На поверхность</button>
+        <button class="station-btn" onclick="travel('https://de6ulu3m-code.github.io/krisinaya_nora/')">🕳️ В уютную нору</button>
+        <button class="station-btn" onclick="travel('https://de6ulu3m-code.github.io/rattown/')">🏙️ В Крысо-Град</button>
     </div>
 
     <div id="overlay"></div>
 
     <script>
-        // Анимация прибытия поезда при загрузке
+        let hasCheese = false;
+
         window.onload = () => {
+            // Прибытие поезда
             setTimeout(() => {
                 document.getElementById('train').classList.add('arrived');
             }, 500);
+
+            // Прячем сыр в случайном месте на платформе
+            const cheese = document.getElementById('hidden-cheese');
+            const platform = document.querySelector('.platform');
+            let randomX = Math.floor(Math.random() * (platform.offsetWidth - 50)) + 50;
+            cheese.style.left = randomX + 'px';
+            cheese.style.top = Math.floor(Math.random() * 40 + 20) + 'px';
         };
+
+        function collectCheese() {
+            hasCheese = true;
+            document.getElementById('hidden-cheese').style.display = 'none';
+            alert("Вы нашли завалявшийся кусочек сыра! Может, отдать его музыканту?");
+        }
+
+        function talkToMusician() {
+            const notes = document.getElementById('notes');
+            if (hasCheese) {
+                notes.style.display = 'block';
+                notes.innerText = "🎶 О! Сыр! Спасибо, дружище! *Играет рок-н-ролл* 🎸🤘";
+                hasCheese = false; // Отдали сыр
+                setTimeout(() => { notes.style.display = 'none'; }, 5000);
+            } else {
+                alert("Музыкант: 'Эх, на пустой желудок струны не звучат... Найти бы кусочек сыра тут на станции.'");
+            }
+        }
 
         function travel(url) {
             const train = document.getElementById('train');
             const overlay = document.getElementById('overlay');
-            
-            // Поезд уезжает
             train.classList.remove('arrived');
             train.classList.add('departed');
-            
-            // Экран гаснет
             overlay.style.opacity = '1';
-            
-            setTimeout(() => {
-                window.location.href = url;
-            }, 1500);
+            setTimeout(() => { window.location.href = url; }, 1500);
         }
     </script>
 </body>
