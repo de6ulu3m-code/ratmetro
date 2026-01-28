@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Крысиный Метрополитен</title>
+    <style>
+        body {
+            background-color: #111;
+            color: #ccc;
+            font-family: 'Courier New', monospace;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; min-height: 100vh; margin: 0;
+            overflow: hidden;
+        }
+
+        .station-sign {
+            background: #ffcc00; color: #000;
+            padding: 10px 40px; font-weight: bold; border-radius: 5px;
+            box-shadow: 0 0 20px rgba(255, 204, 0, 0.4);
+            margin-bottom: 50px;
+        }
+
+        .tunnel {
+            width: 300px; height: 150px;
+            border-top: 5px solid #444; border-bottom: 5px solid #444;
+            display: flex; justify-content: space-around; align-items: center;
+            position: relative; background: linear-gradient(90deg, #111, #222, #111);
+        }
+
+        .train { font-size: 50px; transition: 2s ease-in-out; position: absolute; left: -100px; }
+        .train.arrived { left: 110px; }
+        .train.departed { left: 400px; }
+
+        .map {
+            display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 50px;
+        }
+
+        .station-btn {
+            background: #333; color: #ffcc00; border: 1px solid #ffcc00;
+            padding: 15px 30px; border-radius: 50px; cursor: pointer;
+            text-decoration: none; text-align: center; transition: 0.3s;
+        }
+
+        .station-btn:hover { background: #ffcc00; color: #000; }
+        
+        #overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: black; opacity: 0; pointer-events: none; transition: 1s;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="station-sign">МЕТРОПОЛИТЕН</div>
+
+    <div class="tunnel">
+        <div class="train" id="train">🚃🐁</div>
+    </div>
+
+    <div class="map">
+        <button class="station-btn" onclick="travel('https://de6ulu3m-code.github.io/ratpage/')">🌿 Станция "Зелёный Луг" (Дворик)</button>
+        <button class="station-btn" onclick="travel('https://de6ulu3m-code.github.io/krisinaya_nora/')">🕳️ Станция "Уютный Тупик" (Нора)</button>
+        <button class="station-btn" onclick="travel('https://de6ulu3m-code.github.io/rattown/')">🏙️ Станция "Центр Грызунов" (Город)</button>
+    </div>
+
+    <div id="overlay"></div>
+
+    <script>
+        // Анимация прибытия поезда при загрузке
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('train').classList.add('arrived');
+            }, 500);
+        };
+
+        function travel(url) {
+            const train = document.getElementById('train');
+            const overlay = document.getElementById('overlay');
+            
+            // Поезд уезжает
+            train.classList.remove('arrived');
+            train.classList.add('departed');
+            
+            // Экран гаснет
+            overlay.style.opacity = '1';
+            
+            setTimeout(() => {
+                window.location.href = url;
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
