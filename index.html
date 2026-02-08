@@ -4,24 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Крысиный Метрополитен</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
     <style>
         body {
             background-color: #111;
             color: #ccc;
-            font-family: 'Courier New', monospace;
+            /* Courier New остается для атмосферы, но эмодзи теперь общие */
+            font-family: 'Noto Color Emoji', 'Courier New', monospace;
             display: flex; flex-direction: column; align-items: center;
             justify-content: center; min-height: 100vh; margin: 0;
             overflow: hidden;
+        }
+
+        /* Статистика сверху */
+        .stat-overlay {
+            position: absolute; top: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 15px; border-radius: 20px;
+            font-size: 0.8rem; color: #ffcc00;
         }
 
         .station-sign {
             background: #ffcc00; color: #000;
             padding: 10px 40px; font-weight: bold; border-radius: 5px;
             box-shadow: 0 0 20px rgba(255, 204, 0, 0.4);
-            margin-bottom: 30px;
+            margin-bottom: 30px; font-family: 'Courier New', monospace;
         }
 
-        /* Музыкант и поиск сыра */
         .platform {
             position: relative; width: 100%; max-width: 500px; height: 100px;
             border-bottom: 10px solid #333; margin-bottom: 20px;
@@ -33,13 +42,13 @@
         }
 
         #hidden-cheese {
-            position: absolute; font-size: 20px; cursor: pointer;
-            display: block; z-index: 10;
+            position: absolute; font-size: 25px; cursor: pointer;
+            display: block; z-index: 10; filter: drop-shadow(0 0 5px gold);
         }
 
         .music-notes {
             position: absolute; top: -40px; left: 30px;
-            font-size: 20px; display: none; color: #ffcc00;
+            font-size: 18px; display: none; color: #ffcc00;
             white-space: nowrap; animation: float 2s infinite;
         }
 
@@ -60,20 +69,26 @@
         .train.departed { left: 400px; }
 
         .map { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 30px; }
+        
         .station-btn {
-            background: #333; color: #ffcc00; border: 1px solid #ffcc00;
+            background: #222; color: #ffcc00; border: 1px solid #ffcc00;
             padding: 12px 25px; border-radius: 50px; cursor: pointer;
-            text-decoration: none; text-align: center; transition: 0.3s; font-size: 0.9rem;
+            text-decoration: none; text-align: center; transition: 0.3s; 
+            font-size: 0.9rem; font-family: 'Noto Color Emoji', sans-serif;
         }
         .station-btn:hover { background: #ffcc00; color: #000; }
         
         #overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: black; opacity: 0; pointer-events: none; transition: 1s;
+            background: black; opacity: 0; pointer-events: none; transition: 1s; z-index: 100;
         }
     </style>
 </head>
 <body>
+
+    <div class="stat-overlay">
+        Сыр: <span id="cheese-display">0</span> | Реп: <span id="rep-display">0</span>
+    </div>
 
     <div class="station-sign">СТАНЦИЯ "ПОДЗЕМНАЯ"</div>
 
@@ -97,41 +112,72 @@
     <div id="overlay"></div>
 
     <script>
-        let hasCheese = false;
+        let cheese = 0;
+        let reputation = 0;
+        let hasCheeseFound = false;
+
+        function saveStats() {
+            localStorage.setItem('ratCheese', cheese);
+            localStorage.setItem('ratRep', reputation);
+        }
+
+        function loadStats() {
+            if (localStorage.getItem('ratCheese')) cheese = parseInt(localStorage.getItem('ratCheese'));
+            if (localStorage.getItem('ratRep')) reputation = parseInt(localStorage.getItem('ratRep'));
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('cheese-display').innerText = cheese;
+            document.getElementById('rep-display').innerText = reputation;
+        }
 
         window.onload = () => {
+            loadStats();
+            
             // Прибытие поезда
             setTimeout(() => {
                 document.getElementById('train').classList.add('arrived');
             }, 500);
 
-            // Прячем сыр в случайном месте на платформе
-            const cheese = document.getElementById('hidden-cheese');
+            // Прячем сыр
+            const cheeseEl = document.getElementById('hidden-cheese');
             const platform = document.querySelector('.platform');
-            let randomX = Math.floor(Math.random() * (platform.offsetWidth - 50)) + 50;
-            cheese.style.left = randomX + 'px';
-            cheese.style.top = Math.floor(Math.random() * 40 + 20) + 'px';
+            let randomX = Math.floor(Math.random() * (platform.offsetWidth - 60)) + 30;
+            cheeseEl.style.left = randomX + 'px';
+            cheeseEl.style.top = Math.floor(Math.random() * 30 + 20) + 'px';
         };
 
         function collectCheese() {
-            hasCheese = true;
-            document.getElementById('hidden-cheese').style.display = 'none';
-            alert("Вы нашли завалявшийся кусочек сыра! Может, отдать его музыканту?");
+            if (!hasCheeseFound) {
+                hasCheeseFound = true;
+                cheese += 1; // Добавляем сыр в общий баланс
+                saveStats();
+                updateUI();
+                document.getElementById('hidden-cheese').style.display = 'none';
+                alert("Вы нашли завалявшийся кусочек сыра! (+1 🧀)");
+            }
         }
 
         function talkToMusician() {
             const notes = document.getElementById('notes');
-            if (hasCheese) {
+            if (hasCheeseFound) {
                 notes.style.display = 'block';
-                notes.innerText = "🎶 О! Сыр! Спасибо, дружище! *Играет рок-н-ролл* 🎸🤘";
-                hasCheese = false; // Отдали сыр
+                notes.innerText = "🎶 О! Сыр! Спасибо, дружище! *Рок-н-ролл!* 🎸🤘";
+                
+                reputation += 2; // Бонус к репутации за доброту
+                hasCheeseFound = false; // Сыр отдан
+                
+                saveStats();
+                updateUI();
                 setTimeout(() => { notes.style.display = 'none'; }, 5000);
             } else {
-                alert("Музыкант: 'Эх, на пустой желудок струны не звучат... Найти бы кусочек сыра тут на станции.'");
+                alert("Музыкант: 'Эх, на пустой желудок струны не звучат... Найти бы кусочек сыра на платформе.'");
             }
         }
 
         function travel(url) {
+            saveStats(); // Сохраняем перед отъездом
             const train = document.getElementById('train');
             const overlay = document.getElementById('overlay');
             train.classList.remove('arrived');
